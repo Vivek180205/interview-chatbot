@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Login</title>
+  <link rel="stylesheet" href="/css/style.css">
+
+  <!-- reCAPTCHA script -->
+  <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+</head>
+<body>
+
+<div class="container">
+  <h2>Login</h2>
+
+  <input type="email" id="loginEmail" placeholder="Email">
+  <input type="password" id="loginPassword" placeholder="Password">
+
+  <!-- CAPTCHA -->
+  <div class="g-recaptcha" data-sitekey="6Le9rc4sAAAAAHjHe-OILfGzcuxf-BzKAc8US4cD"></div>
+
+  <button onclick="login()">Login</button>
+
+  <p>Don't have account? <a href="/signup.html">Signup</a></p>
+</div>
+
+<script src="/js/script.js"></script>
+</body>
+</html>

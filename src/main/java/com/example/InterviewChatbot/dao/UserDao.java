@@ -24,11 +24,12 @@ public class UserDao {
                 u.getName(),
                 u.getEmail(),
                 u.getPassword(),
-                u.getRole()
+                u.getTarget_role(),
+                u.getExperience_level()
         );
     }
 
-    public User fetchUser(String email) {               // for SignIn
+    public User fetchUserByEmail(String email) {               // for SignIn
         try {
             return jdbcTemplate.queryForObject(loginQuery, new Object[]{email},
                     (rs,num)->{
@@ -37,7 +38,8 @@ public class UserDao {
                         user.setName(rs.getString("name"));
                         user.setEmail(rs.getString("email"));
                         user.setPassword(rs.getString("password"));
-                        user.setRole(rs.getString("role"));
+                        user.setTarget_role(rs.getString("target_role"));
+                        user.setExperience_level(rs.getString("experience_level"));
                         user.setCreated_at(rs.getDate("created_at"));
                         return user;
                     }
