@@ -18,13 +18,11 @@ public enum Role {
         this.displayName = displayName;
     }
 
-    //  frontend ko readable naam dene ke liye
     @JsonValue
     public String getDisplayName() {
         return displayName;
     }
 
-    //  frontend se aane wali value handle karne ke liye
     @JsonCreator
     public static Role fromValue(String value) {
         for (Role role : Role.values()) {
