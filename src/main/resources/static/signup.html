@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Signup</title>
+    <link rel="stylesheet" href="/css/style.css">
+
+    <!-- reCAPTCHA script -->
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+</head>
+<body>
+
+<div class="container">
+    <h2>Signup</h2>
+
+    <input type="text" id="signupUsername" placeholder="Username">
+    <input type="email" id="signupEmail" placeholder="Email">
+    <input type="password" id="signupPassword" placeholder="Password">
+
+    <!-- CAPTCHA -->
+    <div class="g-recaptcha" data-sitekey="6Le9rc4sAAAAAHjHe-OILfGzcuxf-BzKAc8US4cD"></div>
+
+    <button onclick="signup()">Signup</button>
+
+    <p>Already have an account?
+        <a href="/login.html">Login</a>
+    </p>
+</div>
+<script src="/js/script.js"></script>
+</body>
+</html>
