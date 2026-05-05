@@ -17,15 +17,15 @@ export default function Login() {
     }
 
     if (!captchaToken) {
-       alert("Please verify captcha");
-       return;
+      alert("Please verify captcha");
+      return;
     }
 
     try {
       const response = await fetch("http://localhost:8080/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password ,captcha: captchaToken}),
+        body: JSON.stringify({ email, password, captcha: captchaToken }),
       });
 
       if (!response.ok) {
@@ -33,11 +33,12 @@ export default function Login() {
         return;
       }
 
-      const token = await response.text();
-      sessionStorage.setItem("token", token);
+      const data = await response.json();
+      sessionStorage.setItem("token", data.token);
       sessionStorage.setItem("email", email.toLowerCase());
 
-      navigate("/interview"); // ya jo tera route hai
+      navigate("/interview");
+
     } catch (err) {
       alert("Server error");
     }
