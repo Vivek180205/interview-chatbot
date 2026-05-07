@@ -1,4 +1,5 @@
 import { motion } from "motion/react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowRight, Mic, Brain, Zap, Trophy, Star } from "lucide-react";
 import { INTERVIEW_CATEGORIES } from "../data/interviewQuestions";
@@ -18,6 +19,7 @@ const STATS = [
 
 export function LandingPage() {
   const navigate = useNavigate();
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
   return (
     <div
@@ -142,7 +144,6 @@ export function LandingPage() {
                 transition={{ delay: 0.1 * i + 0.5, duration: 0.5 }}
                 whileHover={{ y: -4, scale: 1.01 }}
                 className="group relative rounded-2xl overflow-hidden cursor-pointer"
-                onClick={() => navigate(`/interview/${cat.id}`)}
               >
                 {/* Gradient border effect */}
                 <div
@@ -209,8 +210,9 @@ export function LandingPage() {
                     <span className="text-white/30 text-xs">
                       {cat.questions.length} questions
                     </span>
-                    <div
-                      className="flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-lg transition-all duration-300 group-hover:gap-2"
+                    <button
+                      onClick={() => navigate(`/signup?track=${cat.id}`)}
+                      className="flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-lg transition-all duration-300 hover:gap-2"
                       style={{
                         color: cat.colorFrom,
                         background: `${cat.colorFrom}15`,
@@ -219,13 +221,14 @@ export function LandingPage() {
                     >
                       Start
                       <ArrowRight size={14} />
-                    </div>
+                    </button>
                   </div>
                 </div>
               </motion.div>
             ))}
           </div>
         </section>
+
 
         {/* How it works */}
         <section className="px-4 pb-20 max-w-4xl mx-auto">

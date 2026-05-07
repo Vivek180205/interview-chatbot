@@ -29,6 +29,12 @@ public class UserDao {
         );
     }
 
+    public boolean existsByEmail(String email){
+        String query = "SELECT COUNT(*) FROM users WHERE email = ?";
+        Integer count = jdbcTemplate.queryForObject( query, Integer.class, email );
+        return count != null && count > 0;
+    }
+
     public User fetchUserByEmail(String email) {               // for SignIn
         try {
             return jdbcTemplate.queryForObject(loginQuery, new Object[]{email},

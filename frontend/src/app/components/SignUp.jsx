@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 export default function SignUp() {
   const [username, setUsername] = useState("");
@@ -9,6 +9,9 @@ export default function SignUp() {
   const [experience, setExperience] = useState("");
 
   const navigate = useNavigate();
+
+  const [searchParams] = useSearchParams();
+  const track = searchParams.get("track");
 
   const register = async () => {
 
@@ -32,10 +35,16 @@ export default function SignUp() {
 
       if (response.ok) {
         alert("Signup successful.");
-        navigate("/");
+        navigate(`/interview/${track}`);
       } else {
+
         const text = await response.text();
-        alert("Signup failed: " + text);
+
+        if (text.includes("User Already Exists.")) {
+          alert("User already exists. Please login.");
+        } else {
+          alert(text);
+        }
       }
     } catch (error) {
       alert("Server error");
