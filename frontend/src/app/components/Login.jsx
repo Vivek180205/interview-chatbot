@@ -37,7 +37,7 @@ export default function Login() {
       sessionStorage.setItem("token", data.token);
       sessionStorage.setItem("email", email.toLowerCase());
 
-      navigate("/interview");
+      navigate("/interview/backend");
 
     } catch (err) {
       alert("Server error");

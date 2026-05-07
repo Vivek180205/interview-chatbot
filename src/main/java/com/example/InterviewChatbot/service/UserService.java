@@ -18,6 +18,10 @@ public class UserService {
 
     public void register(SignupRequest req){
 
+        if(userDao.existsByEmail(req.getEmail())){
+            throw new RuntimeException("User Already Exists.");
+        }
+
         User user = new User();
 
         user.setName(req.getUsername());
