@@ -2,6 +2,7 @@ package com.example.InterviewChatbot.dao;
 
 import com.example.InterviewChatbot.models.User;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -18,6 +19,9 @@ public class UserDao {
 
     @Value("${user.query.SignUp}")
     private String signupQuery;
+
+    @Value("${user.query.findByEmailQuery}")
+    private String findByEmailQuery;
 
     public void saveUser(User u){           // for SignUP
         jdbcTemplate.update(signupQuery,
@@ -53,5 +57,13 @@ public class UserDao {
         }catch (Exception e){
             return null;
         }
+    }
+
+    public User findByEmail(String email) {
+        return jdbcTemplate.queryForObject(
+                findByEmailQuery,
+                new BeanPropertyRowMapper<>(User.class),
+                email
+        );
     }
 }

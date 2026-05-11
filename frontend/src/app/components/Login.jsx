@@ -34,10 +34,11 @@ export default function Login() {
       }
 
       const data = await response.json();
+      localStorage.setItem("userId", data.userId);
       sessionStorage.setItem("token", data.token);
       sessionStorage.setItem("email", email.toLowerCase());
 
-      navigate("/interview/backend");
+      navigate("/")
 
     } catch (err) {
       alert("Server error");

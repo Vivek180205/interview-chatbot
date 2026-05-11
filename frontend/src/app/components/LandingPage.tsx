@@ -211,7 +211,14 @@ export function LandingPage() {
                       {cat.questions.length} questions
                     </span>
                     <button
-                      onClick={() => navigate(`/signup?track=${cat.id}`)}
+                      onClick={() => {
+                        const token = sessionStorage.getItem("token");
+                        if (token) {
+                          navigate(`/interview/${cat.id}`);
+                        } else {
+                          navigate(`/signup?track=${cat.id}`);
+                        }
+                      }}
                       className="flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-lg transition-all duration-300 hover:gap-2"
                       style={{
                         color: cat.colorFrom,

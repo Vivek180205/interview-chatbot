@@ -2,6 +2,7 @@ package com.example.InterviewChatbot.controller;
 
 import com.example.InterviewChatbot.dto.LoginRequest;
 import com.example.InterviewChatbot.dto.SignupRequest;
+import com.example.InterviewChatbot.models.User;
 import com.example.InterviewChatbot.service.CaptchaService;
 import com.example.InterviewChatbot.service.UserService;
 import com.example.InterviewChatbot.util.JwtUtil;
@@ -49,9 +50,11 @@ public class AuthController {
         String password = request.getPassword();
         String captcha = request.getCaptcha();
 
+        // remember to comment this IF when running on postman
 //        if(!"test".equals(captcha)){
 //            return ResponseEntity.badRequest().body("Captcha Failed.");
 //        }
+
         if (!captchaService.verifyCaptcha(captcha)) {
             return ResponseEntity.badRequest().body("Captcha Failed");
         }
@@ -59,18 +62,11 @@ public class AuthController {
         userService.login(email, password);
 
         String token = jwtUtil.generateToken(email);
+        User user = userService.getUserByEmail(email);
         return ResponseEntity.ok(Map.of(
-                "token", token
+                "token", token,
+                "userId", user.getId(),
+                "email", email
         ));
-    }
-
-    @GetMapping("/test")
-    public String testApi() {
-        return "JWT working bro 🔥";
-    }
-
-    @GetMapping("/me")
-    public String getUser() {
-        return SecurityContextHolder.getContext().getAuthentication().getName();
     }
 }

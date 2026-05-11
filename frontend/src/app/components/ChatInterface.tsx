@@ -16,6 +16,8 @@ import {
 } from "lucide-react";
 import { INTERVIEW_CATEGORIES, analyzeAnswer } from "../data/interviewQuestions";
 import { AnimatedBackground } from "./AnimatedBackground";
+import { createSession } from "../../services/interviewApi";
+import { Sidebar } from "./Sidebar";
 
 type BotState = "idle" | "thinking" | "speaking";
 type ChatState = "greeting" | "asking" | "waiting" | "thinking" | "complete";
@@ -453,6 +455,9 @@ export function ChatInterface() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [chatState, setChatState] = useState<ChatState>("greeting");
   const [currentQIndex, setCurrentQIndex] = useState(0);
+
+  const [sessionId, setSessionId] = useState<number | null>(null);
+
   const [botState, setBotState] = useState<BotState>("speaking");
   const [inputText, setInputText] = useState("");
   const [isRecording, setIsRecording] = useState(false);
@@ -482,6 +487,26 @@ export function ChatInterface() {
   // Initialize conversation
   useEffect(() => {
     if (!category) return;
+
+    const startSession = async () => {
+      try {
+
+        const data = await createSession({
+          userId: Number(localStorage.getItem("userId")),
+          category: category.id,
+        });
+
+        console.log("SESSION CREATED :", data);
+        console.log("SESSION ID :", data.id);
+
+        setSessionId(data.id);
+
+      } catch (error) {
+        console.error("SESSION ERROR :", error);
+      }
+    };
+
+    startSession();
 
     const greetId = crypto.randomUUID();
     setMessages([
@@ -700,12 +725,13 @@ export function ChatInterface() {
 
   return (
     <div
-      className="min-h-screen bg-[#050508] flex flex-col relative"
+      className="min-h-screen bg-[#050508] flex relative"
       style={{ fontFamily: "'Space Grotesk', sans-serif" }}
     >
       <AnimatedBackground />
+      <Sidebar />
 
-      <div className="relative z-10 flex flex-col h-screen">
+      <div className="relative z-10 flex flex-col h-screen flex-1">
         {/* ── Header ── */}
         <header
           className="flex items-center gap-3 px-4 py-3 border-b flex-shrink-0"
@@ -738,7 +764,7 @@ export function ChatInterface() {
                 className="text-white truncate"
                 style={{ fontWeight: 700, fontSize: "0.9rem" }}
               >
-                PrepStar AI
+                Interview Chatbot
               </span>
               <span
                 className="text-xs px-2 py-0.5 rounded-full hidden sm:inline-flex"
