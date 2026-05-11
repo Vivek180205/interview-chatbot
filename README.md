@@ -43,7 +43,7 @@ Built with a modern frontend + Spring Boot backend architecture, the platform he
 
 ## Interview Interface
 
-<img width="1919" height="983" alt="Screenshot 2026-05-07 215932" src="https://github.com/user-attachments/assets/742380a3-8f44-477f-afa2-aea907b67689" />
+<img width="1916" height="983" alt="image" src="https://github.com/user-attachments/assets/2511a099-55c4-4e44-8512-35e8766359cc" />
 
 ---
 
