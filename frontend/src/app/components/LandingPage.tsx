@@ -44,15 +44,39 @@ export function LandingPage() {
               Interview <span className="text-purple-400">Chatbot</span>
             </span>
           </div>
-          <button
-            onClick={() => navigate("/signup")}
-            className="px-5 py-2 rounded-lg font-medium text-sm
-            bg-gradient-to-r from-purple-500 to-cyan-500
-            text-white hover:opacity-90 transition-all duration-200
-            shadow-lg shadow-purple-500/20"
-            >
-            Sign Up
-          </button>
+          {
+            sessionStorage.getItem("token") ? (
+
+              <button
+                onClick={() => {
+
+                  sessionStorage.clear();
+                  localStorage.removeItem("sessionId");
+
+                  navigate("/");
+                }}
+                className="px-5 py-2 rounded-lg font-medium text-sm
+                bg-gradient-to-r from-red-500 to-pink-500
+                text-white hover:opacity-90 transition-all duration-200
+                shadow-lg shadow-red-500/20"
+              >
+                Logout
+              </button>
+
+            ) : (
+
+              <button
+                onClick={() => navigate("/signup")}
+                className="px-5 py-2 rounded-lg font-medium text-sm
+                bg-gradient-to-r from-purple-500 to-cyan-500
+                text-white hover:opacity-90 transition-all duration-200
+                shadow-lg shadow-purple-500/20"
+              >
+                Sign Up
+              </button>
+
+            )
+          }
 
         </header>
 

@@ -37,6 +37,7 @@ export default function Login() {
       localStorage.setItem("userId", data.userId);
       sessionStorage.setItem("token", data.token);
       sessionStorage.setItem("email", email.toLowerCase());
+      sessionStorage.setItem("username", email);
 
       navigate("/")
 
