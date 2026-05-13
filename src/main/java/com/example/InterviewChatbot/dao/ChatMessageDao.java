@@ -22,7 +22,7 @@ public class ChatMessageDao {
     private String chatFetchQuery;
 
     @Value("${session.query.getAvgScore}")
-    private String getSessionStoreQuery;
+    private String getAvgScoreQuery;
 
     public void saveMessage(ChatMessage c) {
         jdbcTemplate.update(chatStoreQuery,
@@ -53,7 +53,7 @@ public class ChatMessageDao {
     public Double getAverageScoreBySessionId(int sessionId){
 
         return jdbcTemplate.queryForObject(
-                getSessionStoreQuery,
+                getAvgScoreQuery,
                 Double.class,
                 sessionId
         );

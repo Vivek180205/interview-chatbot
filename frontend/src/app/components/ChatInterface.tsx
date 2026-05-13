@@ -16,8 +16,12 @@ import {
 } from "lucide-react";
 import { INTERVIEW_CATEGORIES, analyzeAnswer } from "../data/interviewQuestions";
 import { AnimatedBackground } from "./AnimatedBackground";
-import { createSession } from "../../services/interviewApi";
 import { Sidebar } from "./Sidebar";
+import {
+  createSession,
+  saveMessage,
+  getMessages
+} from "../../services/interviewApi";
 
 type BotState = "idle" | "thinking" | "speaking";
 type ChatState = "greeting" | "asking" | "waiting" | "thinking" | "complete";
@@ -489,17 +493,81 @@ export function ChatInterface() {
     if (!category) return;
 
     const startSession = async () => {
+
+      const existingSessionId = localStorage.getItem("sessionId");
       try {
 
-        const data = await createSession({
-          userId: Number(localStorage.getItem("userId")),
-          category: category.id,
-        });
+        if (existingSessionId && localStorage.getItem("category") === category.id ) {
 
-        console.log("SESSION CREATED :", data);
-        console.log("SESSION ID :", data.id);
+          setSessionId(Number(existingSessionId));
 
-        setSessionId(data.id);
+          const oldMessages = await getMessages(
+            Number(existingSessionId)
+          );
+            if (oldMessages.length === 0) {
+
+              const greetId = crypto.randomUUID();
+
+              setMessages([
+                {
+                  id: greetId,
+                  role: "bot",
+                  content: category.botIntro,
+                  type: "greeting",
+                },
+              ]);
+
+              setTimeout(() => {
+                askQuestion(0);
+              }, 2200);
+
+              return;
+            }
+
+          console.log("OLD MESSAGES :", oldMessages);
+
+          const formattedMessages = oldMessages.map((msg: any) => ({
+            id: crypto.randomUUID(),
+            role: msg.sender === "USER" ? "user" : "bot",
+            content: msg.message,
+            type: msg.sender === "USER" ? "answer" : "feedback",
+            score: msg.score,
+          }));
+
+          setMessages(formattedMessages);
+      console.log("FORMATTED :", formattedMessages);
+
+          setChatState("waiting");
+
+        } else {
+
+          const data = await createSession({
+            userId: Number(localStorage.getItem("userId")),
+            category: category.id,
+          });
+
+          console.log("SESSION CREATED :", data);
+
+          setSessionId(data.id);
+
+          localStorage.setItem("sessionId", data.id.toString());
+          localStorage.setItem("category", category.id);
+
+          const greetId = crypto.randomUUID();
+
+          setMessages([
+            {
+              id: greetId,
+              role: "bot",
+              content: category.botIntro,
+              type: "greeting",
+            },
+          ]);
+
+          setTimeout(() => {
+            askQuestion(0);
+          }, 2200);
+        }
 
       } catch (error) {
         console.error("SESSION ERROR :", error);
@@ -508,21 +576,6 @@ export function ChatInterface() {
 
     startSession();
 
-    const greetId = crypto.randomUUID();
-    setMessages([
-      {
-        id: greetId,
-        role: "bot",
-        content: category.botIntro,
-        type: "greeting",
-      },
-    ]);
-
-    const t = setTimeout(() => {
-      askQuestion(0);
-    }, 2200);
-    return () => clearTimeout(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [category]);
 
   const askQuestion = useCallback(
@@ -556,7 +609,7 @@ export function ChatInterface() {
     [category, questions]
   );
 
-  const handleSubmit = useCallback(() => {
+  const handleSubmit = useCallback(async () => {
     const answer = inputText.trim();
     if (!answer || chatState !== "waiting") return;
 
@@ -576,13 +629,23 @@ export function ChatInterface() {
         type: "answer",
       },
     ]);
+    const activeSessionId = sessionId || Number(localStorage.getItem("sessionId"));
+
+    if (activeSessionId) {
+console.log("ACTIVE SESSION :", activeSessionId);
+      await saveMessage({
+        sessionId: activeSessionId,
+        sender: "USER",
+        message: answer,
+      });
+    }
     setInputText("");
     setChatState("thinking");
     setBotState("thinking");
 
     // Simulate AI analysis
     const delay = 1500 + Math.random() * 1000;
-    setTimeout(() => {
+    setTimeout(async () => {
       const q = questions[currentQIndex];
       const { score, feedback, scoreLabel } = analyzeAnswer(q, answer);
 
@@ -599,6 +662,18 @@ export function ChatInterface() {
           scoreLabel,
         },
       ]);
+        const activeSessionId =
+          sessionId || Number(localStorage.getItem("sessionId"));
+
+        if (activeSessionId) {
+console.log("ACTIVE SESSION :", activeSessionId);
+          await saveMessage({
+            sessionId: activeSessionId,
+            sender: "AI",
+            message: feedback,
+            score: score,
+          });
+        }
       setBotState("speaking");
 
       const nextIndex = currentQIndex + 1;
@@ -630,7 +705,15 @@ export function ChatInterface() {
         }, 2000);
       }
     }, delay);
-  }, [inputText, chatState, isRecording, currentQIndex, questions, askQuestion]);
+  }, [
+    inputText,
+    chatState,
+    isRecording,
+    currentQIndex,
+    questions,
+    askQuestion,
+    sessionId
+  ]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {

@@ -26,4 +26,13 @@ public class InterviewSessionController {
         sessionService.completeSession(id);
         return ResponseEntity.ok("Session completed");
     }
+
+    @GetMapping("/api/interviews/user")
+    public ResponseEntity<?> getAllSessions(
+            @RequestParam int userId
+    ) {
+        return ResponseEntity.ok(
+                sessionService.getAllSessions(userId)
+        );
+    }
 }

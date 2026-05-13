@@ -27,10 +27,14 @@ public class SecurityConfig {
                 .cors(cors -> {})
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/login",
+                        .requestMatchers(
+                                "/auth/login",
                                 "/auth/register",
                                 "/session",
-                                "/interview/**")
+                                "/api/interviews/user",
+                                "/interview/messages/**",
+                                "/interview/message"
+                        )
                         .permitAll()
                         .anyRequest().authenticated()
                 );

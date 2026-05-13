@@ -34,8 +34,8 @@ export default function SignUp() {
       });
 
       if (response.ok) {
-        alert("Signup successful.");
-        navigate(`/interview/${track}`);
+        alert("Signup successful. Please login.");
+        navigate("/login");
       } else {
 
         const text = await response.text();

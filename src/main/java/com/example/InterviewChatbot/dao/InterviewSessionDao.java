@@ -2,6 +2,7 @@ package com.example.InterviewChatbot.dao;
 
 import com.example.InterviewChatbot.models.InterviewSession;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -22,7 +23,6 @@ public class InterviewSessionDao {
     private String sessionStoreQuery;
 
     public Integer saveSession(InterviewSession session){
-
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
         jdbcTemplate.update(connection -> {
@@ -53,5 +53,21 @@ public class InterviewSessionDao {
         """;
 
         jdbcTemplate.update(query, avgScore, sessionId);
+    }
+
+    public List<InterviewSession> getSessionsByUserId(int userId) {
+
+        String sql = """
+        SELECT *
+        FROM interview_sessions
+        WHERE user_id = ?
+        ORDER BY id DESC
+    """;
+
+        return jdbcTemplate.query(
+                sql,
+                new BeanPropertyRowMapper<>(InterviewSession.class),
+                userId
+        );
     }
 }

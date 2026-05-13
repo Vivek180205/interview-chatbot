@@ -20,30 +20,40 @@ public class JwtFilter extends OncePerRequestFilter {
     private JwtUtil jwtUtil;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain)
-                                    throws ServletException, IOException {
+    protected void doFilterInternal(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            FilterChain filterChain
+    ) throws ServletException, IOException {
 
-        if (request.getServletPath().equals("/auth/login")) {
+        String path = request.getServletPath();
+
+        // PUBLIC ROUTES
+
+        if (path.equals("/auth/login") ||
+                path.equals("/auth/register") ||
+                path.equals("/session") ||
+                path.equals("/api/interviews/user") ||
+                path.startsWith("/interview/messages") ||
+                path.equals("/interview/message")
+        ) {
+
             filterChain.doFilter(request, response);
             return;
         }
 
-        String header = request.getHeader("Authorization");
+        String authHeader = request.getHeader("Authorization");
 
-        if(header != null && header.startsWith("Bearer ")){
-            String token = header.substring(7);
-            String email = jwtUtil.extractEmail(token);
-
-            if (email != null){
-                UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
-                        email, null, new ArrayList<>());
-
-                SecurityContextHolder.getContext().setAuthentication(auth);
-            }
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            return;
         }
+        String token = authHeader.substring(7);
 
-        filterChain.doFilter(request,response);
+        if (!jwtUtil.validateToken(token)) {
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            return;
+        }
+        filterChain.doFilter(request, response);
     }
 }

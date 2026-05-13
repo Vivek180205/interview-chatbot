@@ -6,6 +6,8 @@ import com.example.InterviewChatbot.dto.InterviewSessionRequest;
 import com.example.InterviewChatbot.models.InterviewSession;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class InterviewSessionService {
     private final InterviewSessionDao sessionDao;
@@ -39,5 +41,9 @@ public class InterviewSessionService {
         }
 
         sessionDao.updateAverageScore(sessionId, avgScore);
+    }
+
+    public List<InterviewSession> getAllSessions(int userId) {
+        return sessionDao.getSessionsByUserId(userId);
     }
 }
