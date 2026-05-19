@@ -6,6 +6,7 @@ import com.example.InterviewChatbot.dto.InterviewSessionRequest;
 import com.example.InterviewChatbot.models.InterviewSession;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -25,9 +26,10 @@ public class InterviewSessionService {
         session.setUserId(req.getUserId());
         session.setCategory(req.getCategory());
         session.setAvgScore(0.0);
+        session.setCompleted(false);
+        session.setCreatedAt(LocalDateTime.now());
 
         Integer generatedId = sessionDao.saveSession(session);
-
         session.setId(generatedId);
 
         return session;
@@ -40,7 +42,7 @@ public class InterviewSessionService {
             avgScore = 0.0;
         }
 
-        sessionDao.updateAverageScore(sessionId, avgScore);
+        sessionDao.completeSession(sessionId, avgScore,true, LocalDateTime.now());
     }
 
     public List<InterviewSession> getAllSessions(int userId) {

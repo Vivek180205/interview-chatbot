@@ -9,6 +9,8 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
 import java.sql.PreparedStatement;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -21,10 +23,11 @@ public class InterviewSessionDao {
 
     @Value("${session.query.store}")
     private String sessionStoreQuery;
+    @Value("${session.query.completed}")
+    private String completeSessionQuery;
 
     public Integer saveSession(InterviewSession session){
         KeyHolder keyHolder = new GeneratedKeyHolder();
-
         jdbcTemplate.update(connection -> {
 
             PreparedStatement ps = connection.prepareStatement(
@@ -35,7 +38,12 @@ public class InterviewSessionDao {
             ps.setInt(1, session.getUserId());
             ps.setString(2, session.getCategory());
             ps.setDouble(3, session.getAvgScore());
+            ps.setBoolean(4, session.getCompleted());
 
+            ps.setTimestamp(
+                    5,
+                    Timestamp.valueOf(session.getCreatedAt())
+            );
             return ps;
 
         }, keyHolder);
@@ -43,17 +51,16 @@ public class InterviewSessionDao {
         return keyHolder.getKey().intValue();
     }
 
-
-    public void updateAverageScore(int sessionId, Double avgScore){
-
-        String query = """
-        UPDATE interview_sessions
-        SET average_score = ?
-        WHERE id = ?
-        """;
-
-        jdbcTemplate.update(query, avgScore, sessionId);
+    public void completeSession(int sessionId, Double avgScore,boolean completed, LocalDateTime endedAt ){
+        jdbcTemplate.update(
+                completeSessionQuery,
+                avgScore,
+                completed,
+                Timestamp.valueOf(endedAt),
+                sessionId
+        );
     }
+
 
     public List<InterviewSession> getSessionsByUserId(int userId) {
 
