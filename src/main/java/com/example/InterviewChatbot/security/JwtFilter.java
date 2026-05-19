@@ -30,9 +30,9 @@ public class JwtFilter extends OncePerRequestFilter {
 
         // PUBLIC ROUTES
 
-        if (path.equals("/auth/login") ||
+        if (    path.equals("/auth/login") ||
                 path.equals("/auth/register") ||
-                path.equals("/session") ||
+                path.startsWith("/session") ||
                 path.equals("/api/interviews/user") ||
                 path.startsWith("/interview/messages") ||
                 path.equals("/interview/message")

@@ -13,13 +13,24 @@ export const createSession = async (data: any) => {
   return response.json();
 };
 
-export const completeSession = async (sessionId: number) => {
-  const response = await fetch(`${BASE_URL}/session/${sessionId}`, {
-    method: "PUT",
-  });
+export const completeSession = async (sessionId:number)=>{
 
-  return response.text();
-};
+  console.log("CALLING API...", sessionId);
+
+  const response = await fetch(
+    `${BASE_URL}/session/${sessionId}`,
+    {
+      method:"PUT"
+    }
+  );
+
+  console.log("STATUS:", response.status);
+
+  const text = await response.text();
+  console.log("RESPONSE:", text);
+
+  return text;
+}
 
 export const saveMessage = async (data: any) => {
   const response = await fetch(`${BASE_URL}/interview/message`, {

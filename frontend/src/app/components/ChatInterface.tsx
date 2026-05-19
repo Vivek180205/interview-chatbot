@@ -20,7 +20,8 @@ import { Sidebar } from "./Sidebar";
 import {
   createSession,
   saveMessage,
-  getMessages
+  getMessages,
+  completeSession
 } from "../../services/interviewApi";
 
 type BotState = "idle" | "thinking" | "speaking";
@@ -632,7 +633,7 @@ export function ChatInterface() {
     const activeSessionId = sessionId || Number(localStorage.getItem("sessionId"));
 
     if (activeSessionId) {
-console.log("ACTIVE SESSION :", activeSessionId);
+        console.log("ACTIVE SESSION :", activeSessionId);
       await saveMessage({
         sessionId: activeSessionId,
         sender: "USER",
@@ -666,7 +667,7 @@ console.log("ACTIVE SESSION :", activeSessionId);
           sessionId || Number(localStorage.getItem("sessionId"));
 
         if (activeSessionId) {
-console.log("ACTIVE SESSION :", activeSessionId);
+        console.log("ACTIVE SESSION :", activeSessionId);
           await saveMessage({
             sessionId: activeSessionId,
             sender: "AI",
@@ -679,6 +680,21 @@ console.log("ACTIVE SESSION :", activeSessionId);
       const nextIndex = currentQIndex + 1;
 
       if (nextIndex >= questions.length) {
+
+          console.log("FINAL BLOCK REACHED");
+
+          const activeSessionId =
+            sessionId || Number(localStorage.getItem("sessionId"));
+
+          console.log("ACTIVE SESSION:", activeSessionId);
+
+          try{
+             const result = await completeSession(activeSessionId);
+             console.log("COMPLETE SUCCESS:", result);
+          }catch(err){
+             console.error("COMPLETE FAILED:", err);
+          }
+
         // Session complete
         setTimeout(() => {
           setMessages((prev) => [
@@ -759,26 +775,12 @@ console.log("ACTIVE SESSION :", activeSessionId);
     setIsRecording(false);
   };
 
-  const handleRestart = () => {
-    setMessages([]);
-    setCurrentQIndex(0);
-    setScores([]);
-    setSessionComplete(false);
-    setChatState("greeting");
-    setBotState("speaking");
-    setInputText("");
+const handleRestart = () => {
 
-    const greetId = crypto.randomUUID();
-    setMessages([
-      {
-        id: greetId,
-        role: "bot",
-        content: category!.botIntro,
-        type: "greeting",
-      },
-    ]);
-    setTimeout(() => askQuestion(0), 2200);
-  };
+    localStorage.removeItem("sessionId");
+    navigate(0);
+
+};
 
   if (!category) {
     return (
