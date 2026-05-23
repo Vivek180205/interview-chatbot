@@ -33,7 +33,8 @@ public class SecurityConfig {
                                 "/session","/session/**",
                                 "/api/interviews/user",
                                 "/interview/messages/**",
-                                "/interview/message"
+                                "/interview/message",
+                                "/ai/**"
                         )
                         .permitAll()
                         .anyRequest().authenticated()

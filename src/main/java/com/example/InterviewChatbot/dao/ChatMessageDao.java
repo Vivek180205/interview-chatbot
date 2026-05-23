@@ -25,6 +25,7 @@ public class ChatMessageDao {
     private String getAvgScoreQuery;
 
     public void saveMessage(ChatMessage c) {
+
         jdbcTemplate.update(chatStoreQuery,
                 c.getSessionId(),
                 c.getSender(),

@@ -35,7 +35,8 @@ public class JwtFilter extends OncePerRequestFilter {
                 path.startsWith("/session") ||
                 path.equals("/api/interviews/user") ||
                 path.startsWith("/interview/messages") ||
-                path.equals("/interview/message")
+                path.equals("/interview/message") ||
+                path.startsWith("/ai")
         ) {
 
             filterChain.doFilter(request, response);
