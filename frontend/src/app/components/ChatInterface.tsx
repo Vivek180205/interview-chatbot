@@ -23,6 +23,8 @@ import {
   getMessages,
   completeSession
 } from "../../services/interviewApi";
+import { evaluateAnswer,parseAIResponse } from "../../services/aiService";
+
 
 type BotState = "idle" | "thinking" | "speaking";
 type ChatState = "greeting" | "asking" | "waiting" | "thinking" | "complete";
@@ -647,37 +649,48 @@ export function ChatInterface() {
     // Simulate AI analysis
     const delay = 1500 + Math.random() * 1000;
     setTimeout(async () => {
-      const q = questions[currentQIndex];
-      const { score, feedback, scoreLabel } = analyzeAnswer(q, answer);
 
-      setScores((prev) => [...prev, score]);
+        const rawResponse = await evaluateAnswer(
+            category.id,
+            questions[currentQIndex].text,
+            answer
+        );
 
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: crypto.randomUUID(),
-          role: "bot",
-          content: feedback,
-          type: "feedback",
-          score,
-          scoreLabel,
-        },
-      ]);
+        const { score, feedback } =
+            parseAIResponse(rawResponse);
+
+        console.log("PARSED:", { score, feedback });
+
+        if (score !== null) {
+            setScores(prev => [...prev, score]);
+        }
+
+        setMessages((prev) => [
+            ...prev,
+            {
+                id: crypto.randomUUID(),
+                role: "bot",
+                content: feedback,
+                type: "feedback",
+                score: score ?? undefined,
+            },
+        ]);
+
         const activeSessionId =
-          sessionId || Number(localStorage.getItem("sessionId"));
+            sessionId || Number(localStorage.getItem("sessionId"));
 
         if (activeSessionId) {
-        console.log("ACTIVE SESSION :", activeSessionId);
-          await saveMessage({
-            sessionId: activeSessionId,
-            sender: "AI",
-            message: feedback,
-            score: score,
-          });
+            await saveMessage({
+                sessionId: activeSessionId,
+                sender: "AI",
+                message: feedback,
+                score: score,
+            });
         }
-      setBotState("speaking");
 
-      const nextIndex = currentQIndex + 1;
+        setBotState("speaking");
+
+        const nextIndex = currentQIndex + 1;
 
       if (nextIndex >= questions.length) {
 
