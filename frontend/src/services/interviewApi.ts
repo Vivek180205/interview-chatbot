@@ -1,5 +1,5 @@
 
-const BASE_URL = "http://localhost:8080";
+import { BASE_URL } from "../services/config";
 
 export const createSession = async (data: any) => {
   const response = await fetch(`${BASE_URL}/session`, {

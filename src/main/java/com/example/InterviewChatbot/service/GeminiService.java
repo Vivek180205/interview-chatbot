@@ -22,28 +22,29 @@ public class GeminiService implements AiService {
     @Override
     public String getResponse(String prompt) {
 
-        String url = apiUrl + "?key=" + apiKey;
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-
-        Map<String, Object> body = Map.of(
-                "contents", List.of(
-                        Map.of(
-                                "parts", List.of(
-                                        Map.of("text", prompt)
-                                )
-                        )
-                )
-        );
-
-        HttpEntity<Map<String, Object>> request =
-                new HttpEntity<>(body, headers);
-
-        ResponseEntity<Map> response =
-                restTemplate.postForEntity(url, request, Map.class);
-
         try {
+
+            String url = apiUrl + "?key=" + apiKey;
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            Map<String, Object> body = Map.of(
+                    "contents", List.of(
+                            Map.of(
+                                    "parts", List.of(
+                                            Map.of("text", prompt)
+                                    )
+                            )
+                    )
+            );
+
+            HttpEntity<Map<String, Object>> request =
+                    new HttpEntity<>(body, headers);
+
+            ResponseEntity<Map> response =
+                    restTemplate.postForEntity(url, request, Map.class);
+
             List candidates = (List) response.getBody().get("candidates");
             Map candidate = (Map) candidates.get(0);
 
@@ -54,14 +55,17 @@ public class GeminiService implements AiService {
 
             String aiText = firstPart.get("text").toString();
 
-            if (!aiText.matches("(?is).*Score:.*")) {
+            if (prompt.contains("Evaluate") && !aiText.matches("(?is).*Score:.*")) {
                 aiText = "Score: 5\nFeedback: " + aiText;
             }
 
             return aiText;
 
-        } catch (Exception e) {
-            return "Error parsing Gemini response.";
+        } catch(Exception e){
+            e.printStackTrace();
+            return
+                    "Score: 0\n" +
+                            "Feedback: AI service unavailable. Please retry.";
         }
     }
 }
