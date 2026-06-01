@@ -23,7 +23,7 @@ import {
   getMessages,
   completeSession
 } from "../../services/interviewApi";
-import { evaluateAnswer,parseAIResponse } from "../../services/aiService";
+import { evaluateAnswer,parseAIResponse, generateSummary} from "../../services/aiService";
 
 
 type BotState = "idle" | "thinking" | "speaking";
@@ -300,9 +300,13 @@ function MessageBubble({ message }: { message: Message }) {
 function CompletionScreen({
   scores,
   categoryName,
+  summary,
+  loadingSummary,
   onRestart,
   onHome,
 }: {
+  summary:string;
+  loadingSummary:boolean;
   scores: number[];
   categoryName: string;
   onRestart: () => void;
@@ -405,6 +409,35 @@ function CompletionScreen({
         </div>
       </div>
 
+      {/* AI Summary */}
+      {loadingSummary && (
+        <div className="mb-8 text-white/40 text-sm">
+          Generating interview summary...
+        </div>
+      )}
+      {summary && (
+        <div
+          className="w-full max-w-xl mb-8 text-left
+                     p-5 rounded-2xl"
+          style={{
+            background:
+              "rgba(255,255,255,0.04)",
+            border:
+              "1px solid rgba(255,255,255,0.08)"
+          }}
+        >
+          <h3 className="text-white mb-4 font-bold">
+            ✨ Interview Summary
+          </h3>
+          <pre
+            className="whitespace-pre-wrap
+                       text-sm text-white/70"
+          >
+            {summary}
+          </pre>
+        </div>
+      )}
+
       {/* Buttons */}
       <div className="flex gap-3">
         <button
@@ -470,6 +503,9 @@ export function ChatInterface() {
   const [isRecording, setIsRecording] = useState(false);
   const [scores, setScores] = useState<number[]>([]);
   const [sessionComplete, setSessionComplete] = useState(false);
+  const [summary, setSummary] = useState("");
+  const [loadingSummary, setLoadingSummary] =
+      useState(false);
   const [speechSupported, setSpeechSupported] = useState(true);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -497,12 +533,21 @@ export function ChatInterface() {
 
     const startSession = async () => {
 
-      const existingSessionId = localStorage.getItem("sessionId");
+      const existingSessionId = sessionStorage.getItem("sessionId");
       try {
 
         if (existingSessionId && localStorage.getItem("category") === category.id ) {
 
           setSessionId(Number(existingSessionId));
+
+          // RESET PREVIOUS SESSION STATE
+          setMessages([]);
+          setScores([]);
+          setCurrentQIndex(0);
+          setSessionComplete(false);
+          setSummary("");
+          setLoadingSummary(false);
+          setChatState("loading");
 
           const oldMessages = await getMessages(
             Number(existingSessionId)
@@ -527,8 +572,6 @@ export function ChatInterface() {
               return;
             }
 
-          console.log("OLD MESSAGES :", oldMessages);
-
           const formattedMessages = oldMessages.map((msg: any) => ({
             id: crypto.randomUUID(),
             role: msg.sender === "USER" ? "user" : "bot",
@@ -537,8 +580,50 @@ export function ChatInterface() {
             score: msg.score,
           }));
 
-          setMessages(formattedMessages);
-      console.log("FORMATTED :", formattedMessages);
+           setMessages(formattedMessages);
+
+           const restoredScores = oldMessages
+             .filter((m:any) => m.score !== null)
+             .map((m:any) => Number(m.score));
+
+           setScores(restoredScores);
+
+            const answeredCount = oldMessages.filter(
+              (m:any) => m.sender === "USER"
+            ).length;
+
+            if (answeredCount >= questions.length) {
+              setSessionComplete(true);
+              setChatState("complete");
+              return;
+            }
+
+            const safeIndex = Math.max(
+              0,
+              Math.min(answeredCount, questions.length - 1)
+            );
+
+            setCurrentQIndex(safeIndex);
+
+            const hasPendingQuestion = formattedMessages.some(
+              (m:any) => m.type === "question"
+            );
+
+            if (!hasPendingQuestion) {
+              const nextQuestion = questions[safeIndex];
+
+              setMessages((prev) => [
+                ...prev,
+                {
+                  id: crypto.randomUUID(),
+                  role: "bot",
+                  content: `Question ${safeIndex + 1} of ${questions.length}:
+
+            ${nextQuestion.text}`,
+                  type: "question",
+                },
+              ]);
+            }
 
           setChatState("waiting");
 
@@ -553,7 +638,7 @@ export function ChatInterface() {
 
           setSessionId(data.id);
 
-          localStorage.setItem("sessionId", data.id.toString());
+          sessionStorage.setItem("sessionId", data.id.toString());
           localStorage.setItem("category", category.id);
 
           const greetId = crypto.randomUUID();
@@ -580,6 +665,36 @@ export function ChatInterface() {
     startSession();
 
   }, [category]);
+
+useEffect(() => {
+
+  if (!sessionComplete) return;
+  const fetchSummary = async () => {
+    setLoadingSummary(true);
+    try {
+      const result =
+        await generateSummary(
+          category.id,
+          messages
+        );
+
+      setSummary(result);
+
+    } catch(err){
+      console.error(
+        "SUMMARY FAILED:",
+        err
+      );
+
+    } finally {
+      setLoadingSummary(false);
+    }
+  };
+
+  fetchSummary();
+
+}, [sessionComplete]);
+
 
   const askQuestion = useCallback(
     (index: number) => {
@@ -632,11 +747,10 @@ export function ChatInterface() {
         type: "answer",
       },
     ]);
-    const activeSessionId = sessionId || Number(localStorage.getItem("sessionId"));
+    const activeSessionId = sessionId || Number(sessionStorage.getItem("sessionId"));
 
     if (activeSessionId) {
-        console.log("ACTIVE SESSION :", activeSessionId);
-      await saveMessage({
+        await saveMessage({
         sessionId: activeSessionId,
         sender: "USER",
         message: answer,
@@ -677,7 +791,7 @@ export function ChatInterface() {
         ]);
 
         const activeSessionId =
-            sessionId || Number(localStorage.getItem("sessionId"));
+            sessionId || Number(sessionStorage.getItem("sessionId"));
 
         if (activeSessionId) {
             await saveMessage({
@@ -694,10 +808,8 @@ export function ChatInterface() {
 
       if (nextIndex >= questions.length) {
 
-          console.log("FINAL BLOCK REACHED");
-
           const activeSessionId =
-            sessionId || Number(localStorage.getItem("sessionId"));
+            sessionId || Number(sessionStorage.getItem("sessionId"));
 
           console.log("ACTIVE SESSION:", activeSessionId);
 
@@ -720,11 +832,11 @@ export function ChatInterface() {
               type: "complete",
             },
           ]);
-          setTimeout(() => {
-            setSessionComplete(true);
-            setBotState("idle");
-            setChatState("complete");
-          }, 1800);
+          setTimeout(async () => {
+             setSessionComplete(true);
+             setBotState("idle");
+             setChatState("complete");
+          },1800);
         }, 1200);
       } else {
         // Ask next question
@@ -788,12 +900,18 @@ export function ChatInterface() {
     setIsRecording(false);
   };
 
-const handleRestart = () => {
+    const handleRestart = () => {
 
-    localStorage.removeItem("sessionId");
-    navigate(0);
+        sessionStorage.removeItem("sessionId");
 
-};
+        setMessages([]);
+        setScores([]);
+        setSummary("");
+        setLoadingSummary(false);
+        setSessionComplete(false);
+
+        navigate(0);
+    };
 
   if (!category) {
     return (
@@ -964,6 +1082,8 @@ const handleRestart = () => {
               <CompletionScreen
                 scores={scores}
                 categoryName={category.name}
+                summary={summary}
+                loadingSummary={loadingSummary}
                 onRestart={handleRestart}
                 onHome={() => navigate("/")}
               />

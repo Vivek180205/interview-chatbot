@@ -1,3 +1,5 @@
+import { BASE_URL } from "../services/config";
+
 export async function evaluateAnswer(
   category: string,
   question: string,
@@ -5,7 +7,7 @@ export async function evaluateAnswer(
 ) {
 
   const response = await fetch(
-    `http://localhost:8080/ai/test?category=${encodeURIComponent(category)}`,
+    `${BASE_URL}/ai/test?category=${encodeURIComponent(category)}`,
     {
       method: "POST",
       headers: {
@@ -33,4 +35,26 @@ export function parseAIResponse(text: string) {
             ? feedbackMatch[1].trim()
             : text
     };
+}
+
+export async function generateSummary(
+  category:string,
+  messages:any[]
+){
+
+  const response = await fetch(
+    `http://localhost:8080/ai/summary`,
+    {
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json"
+      },
+      body: JSON.stringify({
+        category,
+        messages
+      })
+    }
+  );
+
+  return response.text();
 }

@@ -16,7 +16,7 @@ export function Sidebar() {
 
     try {
 
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
       const response = await axios.get(
         `http://localhost:8080/api/interviews/user?userId=${localStorage.getItem("userId")}`,
         {
@@ -26,7 +26,6 @@ export function Sidebar() {
         }
       );
 
-      console.log(response.data);
       setSessions(response.data);
 
     } catch (error) {
@@ -76,8 +75,9 @@ export function Sidebar() {
 
         <button
           onClick={() => {
-            localStorage.removeItem("sessionId");
-            navigate("/");
+              sessionStorage.removeItem("sessionId");
+              localStorage.removeItem("category");
+              navigate("/");
           }}
           className="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all"
           style={{
@@ -106,20 +106,22 @@ export function Sidebar() {
 
             <button
                 key={session.id}
-                onClick={() => {
+               onClick={() => {
 
-                  localStorage.setItem(
-                    "sessionId",
-                    session.id.toString()
-                  );
+                 console.log("CLICKED SESSION:", session.id);
 
-                  localStorage.setItem(
-                    "category",
-                    session.category
-                  );
+                 sessionStorage.setItem(
+                   "sessionId",
+                   session.id.toString()
+                 );
 
-                  navigate(`/interview/${session.category}`);
-                }}
+                 localStorage.setItem(
+                   "category",
+                   session.category
+                 );
+
+                 navigate(`/interview/${session.category}`);
+               }}
               className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-left transition-all hover:bg-white/5"
             >
 
