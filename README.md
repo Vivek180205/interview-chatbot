@@ -1,4 +1,4 @@
-# 🚀 Interview ChatBot — AI Powered Interview Practice Platform
+# Interview ChatBot — AI Powered Interview Practice Platform
 
 PrepStar AI is a full-stack AI interview preparation platform that simulates real technical interviews with instant feedback, voice interaction, and structured interview sessions.
 
