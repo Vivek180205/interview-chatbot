@@ -42,6 +42,9 @@ public class GeminiService implements AiService {
             HttpEntity<Map<String, Object>> request =
                     new HttpEntity<>(body, headers);
 
+            System.out.println("API URL = " + apiUrl);
+            System.out.println("API KEY START = " + apiKey.substring(0, 10));
+
             ResponseEntity<Map> response =
                     restTemplate.postForEntity(url, request, Map.class);
 
